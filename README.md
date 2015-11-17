@@ -24,9 +24,9 @@ TBD
 
 ## Dependencies
 
-This role relies on two roles from the OpenStack Ansible project: openrc and pip_lock_down 
-which will need to be symlinked or otherwise made available in a way that allows Ansible to 
-locate them.
+This role relies on three roles from the OpenStack Ansible project: memcached, openrc, and 
+pip_lock_down which will need to be symlinked or otherwise made available in a way that 
+allows Ansible to locate them.
 
 ## Example Playbook
 
