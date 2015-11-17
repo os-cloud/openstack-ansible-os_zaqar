@@ -1,0 +1,10 @@
+# Neither of these exist yet, but they should eventually come from Github
+
+# openrc role
+- src: https://github.com/openstack/openstack-ansible-openrc/
+
+# pip lock-down role
+- src: https://github.com/openstack/openstack-ansible-pip-lock-down/
+
+# memcache role
+- src: https://github.com/openstack/openstack-ansible-memcache/
