@@ -1,7 +1,5 @@
 
 # Ansible Role: OpenStack Ansible Zaqar 0.1
-:tags: openstack, zaqar, cloud, ansible
-:category: \*nix
 
 
 An Ansible Role to deploy OpenStack Zaqar on Ubuntu LTS 
@@ -30,7 +28,6 @@ allows Ansible to locate them.
 
 ## Example Playbook
 
-.. code-block:: yaml
     - hosts: zaqar_containers
       roles:
         - { role: stevelle.openstack-ansible-zaqar }
