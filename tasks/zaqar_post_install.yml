@@ -27,7 +27,7 @@
       dest: "/etc/zaqar/zaqar.conf"
       config_overrides: "{{ zaqar_zaqar_conf_overrides }}"
       config_type: "ini"
-  notify: Restart zaqar services
+  notify: Restart zaqar api
   tags:
     - zaqar-config
     - zaqar-post-install
@@ -37,7 +37,7 @@
       src: "logging.conf"
       dest: "/etc/zaqar/logging.conf"
       config_type: "ini"
-  notify: Restart zaqar services
+  notify: Restart zaqar api
   tags:
     - zaqar-config
     - zaqar-post-install

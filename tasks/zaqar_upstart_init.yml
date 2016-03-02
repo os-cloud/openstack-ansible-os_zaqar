@@ -21,7 +21,7 @@
     owner: "root"
     group: "root"
   notify:
-    - Restart zaqar services
+    - Restart zaqar api
   tags:
     - upstart-init
     - zaqar-init
@@ -30,7 +30,7 @@
   shell: |
     initctl reload-configuration
   notify:
-    - Restart zaqar services
+    - Restart zaqar api
   tags:
     - upstart-init
     - zaqar-init
@@ -40,7 +40,7 @@
    name: "{{ zaqar_service_name }}"
    enabled: "yes"
   notify:
-    - Restart zaqar services
+    - Restart zaqar api
   tags:
     - upstart-init
     - zaqar-init
