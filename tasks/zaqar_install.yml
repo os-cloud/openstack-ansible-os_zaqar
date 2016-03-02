@@ -28,6 +28,28 @@
     - zaqar-install
     - zaqar-apt-packages
 
+- name: Create developer mode constraint file
+  copy:
+    dest: "/opt/developer-pip-constraints.txt"
+    content: |
+      {% for item in zaqar_developer_constraints %}
+      {{ item }}
+      {% endfor %}
+  when:
+    - zaqar_developer_mode | bool
+  tags:
+    - zaqar-install
+    - zaqar-pip-packages
+
+- name: Set constraint file fact for developer mode
+  set_fact:
+    pip_install_options: "{{ pip_install_options|default('') }} --constraint /opt/developer-pip-constraints.txt"
+  when:
+    - zaqar_developer_mode | bool
+  tags:
+    - zaqar-install
+    - zaqar-pip-packages
+
 - name: Install requires pip packages
   pip:
     name: "{{ item }}"
@@ -37,19 +59,52 @@
   until: install_packages|success
   retries: 5
   delay: 2
-  with_items:
-    - "{{ zaqar_requires_pip_packages }}"
+  with_items: zaqar_requires_pip_packages
   tags:
     - zaqar-install
     - zaqar-pip-packages
 
+- name: Get local venv checksum
+  stat:
+    path: "/var/cache/{{ zaqar_venv_download_url | basename }}"
+    get_md5: False
+  when:
+    - not zaqar_developer_mode | bool
+    - zaqar_venv_enabled | bool
+  register: local_venv_stat
+  tags:
+    - zaqar-install
+    - zaqar-pip-packages
+
+- name: Get remote venv checksum
+  uri:
+    url: "{{ zaqar_venv_download_url | replace('tgz', 'checksum') }}"
+    return_content: True
+  when:
+    - not zaqar_developer_mode | bool
+    - zaqar_venv_enabled | bool
+  register: remote_venv_checksum
+  tags:
+    - zaqar-install
+    - zaqar-pip-packages
+
+# TODO: When project moves to ansible 2 we can pass this a sha256sum which will:
+#       a) allow us to remove force: yes
+#       b) allow the module to calculate the checksum of dest file which would
+#          result in file being downloaded only if provided and dest sha256sum
+#          checksums differ
 - name: Attempt venv download
   get_url:
     url: "{{ zaqar_venv_download_url }}"
     dest: "/var/cache/{{ zaqar_venv_download_url | basename }}"
+    force: yes
   ignore_errors: true
   register: get_venv
-  when: zaqar_venv_enabled | bool
+  when:
+    - not zaqar_developer_mode | bool
+    - zaqar_venv_enabled | bool
+    - (local_venv_stat.stat.exists == False or
+        {{ local_venv_stat.stat.checksum is defined and local_venv_stat.stat.checksum != remote_venv_checksum.content | trim }})
   tags:
     - zaqar-install
     - zaqar-pip-packages
@@ -62,13 +117,25 @@
     - zaqar-install
     - zaqar-pip-packages
 
+- name: Remove existing venv
+  file:
+    path: "{{ zaqar_venv_bin | dirname }}"
+    state: absent
+  when:
+    - zaqar_venv_enabled | bool
+    - zaqar_get_venv | changed
+  tags:
+    - zaqar-install
+    - zaqar-pip-packages
+
 - name: Create zaqar venv dir
   file:
     path: "{{ zaqar_venv_bin | dirname }}"
     state: directory
   when:
+    - not zaqar_developer_mode | bool
     - zaqar_venv_enabled | bool
-    - zaqar_get_venv | success
+    - zaqar_get_venv | changed
   tags:
     - zaqar-install
     - zaqar-pip-packages
@@ -79,8 +146,11 @@
     dest: "{{ zaqar_venv_bin | dirname }}"
     copy: "no"
   when:
+    - not zaqar_developer_mode | bool
     - zaqar_venv_enabled | bool
-    - zaqar_get_venv | success
+    - zaqar_get_venv | changed
+  notify:
+    - Restart zaqar api
   tags:
     - zaqar-install
     - zaqar-pip-packages
@@ -89,6 +159,7 @@
   command: >
     virtualenv-tools --update-path=auto {{ zaqar_venv_bin | dirname }}
   when:
+    - not zaqar_developer_mode | bool
     - zaqar_venv_enabled | bool
     - zaqar_get_venv | success
   tags:
@@ -106,11 +177,12 @@
   until: install_packages|success
   retries: 5
   delay: 2
-  with_items:
-    - "{{ zaqar_pip_packages }}"
+  with_items: zaqar_pip_packages
   when:
     - zaqar_venv_enabled | bool
-    - zaqar_get_venv | failed
+    - zaqar_get_venv | failed or zaqar_developer_mode | bool
+  notify:
+    - Restart zaqar api
   tags:
     - zaqar-install
     - zaqar-pip-packages
@@ -124,9 +196,12 @@
   until: install_packages|success
   retries: 5
   delay: 2
-  with_items:
-    - "{{ zaqar_pip_packages }}"
-  when: not zaqar_venv_enabled | bool
+  with_items: zaqar_pip_packages
+  when:
+    - not zaqar_developer_mode | bool
+    - not zaqar_venv_enabled | bool
+  notify:
+    - Restart zaqar api
   tags:
     - zaqar-install
     - zaqar-pip-packages

@@ -31,6 +31,13 @@ zaqar_bin: "{{ zaqar_venv_bin }}"
 
 zaqar_venv_download_url: http://127.0.0.1/venvs/untagged/ubuntu/zaqar.tgz
 
+zaqar_git_repo: https://git.openstack.org/openstack/zaqar
+zaqar_git_install_branch: master
+
+zaqar_developer_mode: false
+zaqar_developer_constraints:
+  - "git+{{ zaqar_git_repo }}@{{ zaqar_git_install_branch }}#egg=zaqar"
+
 ## System info
 zaqar_system_user_name: zaqar
 zaqar_system_group_name: zaqar
@@ -63,7 +70,7 @@ zaqar_public_auth_version: 3
 zaqar_mgmt_database_user: zaqar
 zaqar_mgmt_database_name: zaqar
 zaqar_mgmt_db_type: mysql+pymysql
-zaqar_mgmt_db_addres: {{ zaqar_ }}
+zaqar_mgmt_db_addres: "{{ ansible_ssh_host }}"
 zaqar_mgmt_db_port: 27017
 zaqar_mgmt_db_options: "?charset=utf8"
 zaqar_connection_string: "{{ zaqar_mgmt_db_type }}://{{ zaqar_mgmt_database_user }}:{{ zaqar_container_mysql_password }}@{{ zaqar_mgmt_db_address }}:{{ zaqar_mgmt_db_port }}/{{ zaqar_mgmt_database_name }}{{ zaqar_mgmt_db_options }}"
@@ -101,9 +108,6 @@ zaqar_pip_packages:
   - python-zaqarclient
   - PyMySQL
   - python-memcached
-#  - python-keystoneclient
-#  - keystonemiddleware
-#  - pycrypto
   - pymongo
 
 ## Tunable overrides
