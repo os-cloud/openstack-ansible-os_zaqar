@@ -111,4 +111,4 @@ zaqar_pip_packages:
   - pymongo
 
 ## Tunable overrides
-zaqar_ceilometer_conf_overrides: {}
+zaqar_zaqar_conf_overrides: {}
