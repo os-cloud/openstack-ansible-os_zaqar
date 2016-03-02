@@ -36,7 +36,6 @@
   copy:
       src: "logging.conf"
       dest: "/etc/zaqar/logging.conf"
-      config_type: "ini"
   notify: Restart zaqar api
   tags:
     - zaqar-config
