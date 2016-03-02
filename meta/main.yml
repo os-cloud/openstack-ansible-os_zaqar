@@ -32,4 +32,9 @@ galaxy_info:
     - openstack
 dependencies:
   - openstack_openrc
-  - pip_lock_down
+  - role: pip_lock_down
+    when:
+      - not zaqar_developer_mode | bool
+  - role: pip_install
+    when:
+      - zaqar_developer_mode | bool
